@@ -31,6 +31,7 @@ def calculate_angle(a,b,c):
 
 
 angle = 90
+firstRound = True
 
 
 #Video feed
@@ -44,9 +45,9 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
     for i in range(5):
         print(5-i)
         time.sleep(1)
+    
         
     start_time = datetime.datetime.timestamp(presentDate)
-    print(start_time)
     while img.isOpened:
         ret, frame = img.read()
         
@@ -68,26 +69,55 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
             
             try:
                 landmarks = poseresults.pose_landmarks.landmark
-                for index, arm in enumerate(handresults.multi_handedness):
+                if handresults.multi_hand_landmarks:
+                    for index, arm in enumerate(handresults.multi_handedness):
+                        mp_drawing.draw_landmarks(image, arm, mp_hands.HAND_CONNECTIONS, 
+                                            mp_drawing.DrawingSpec(color=(221, 122, 76), thickness=2, circle_radius=4),
+                                            mp_drawing.DrawingSpec(color=(250, 44, 250), thickness=2, circle_radius=2),
+                                            )
                     wrist = [handresults.multi_hand_landmarks[index].landmark[0].x, handresults.multi_hand_landmarks[index].landmark[0].y]
-                    thumbcmc = [handresults.multi_hand_landmarks[index].landmark[1].x, handresults.multi_hand_landmarks[index].landmark[1].y]
-                    lshoulder = [landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].x, landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].y]
+                    thumbmcp = [handresults.multi_hand_landmarks[index].landmark[2].x, handresults.multi_hand_landmarks[index].landmark[2].y]
+                    thumbip = [handresults.multi_hand_landmarks[index].landmark[3].x, handresults.multi_hand_landmarks[index].landmark[3].y]
+                    thumbtip = [handresults.multi_hand_landmarks[index].landmark[4].x, handresults.multi_hand_landmarks[index].landmark[4].y]
+                    indexmcp = [handresults.multi_hand_landmarks[index].landmark[5].x, handresults.multi_hand_landmarks[index].landmark[5].y]
+                    indexpip = [handresults.multi_hand_landmarks[index].landmark[6].x, handresults.multi_hand_landmarks[index].landmark[6].y]
+                    indexdip = [handresults.multi_hand_landmarks[index].landmark[7].x, handresults.multi_hand_landmarks[index].landmark[7].y]
+                    indextip = [handresults.multi_hand_landmarks[index].landmark[8].x, handresults.multi_hand_landmarks[index].landmark[8].y]
+                    indextip = [handresults.multi_hand_landmarks[index].landmark[8].x, handresults.multi_hand_landmarks[index].landmark[8].y]
+                    middlemcp = [handresults.multi_hand_landmarks[index].landmark[9].x, handresults.multi_hand_landmarks[index].landmark[9].y]
+                    middlepip = [handresults.multi_hand_landmarks[index].landmark[10].x, handresults.multi_hand_landmarks[index].landmark[10].y]
+                    middledip = [handresults.multi_hand_landmarks[index].landmark[11].x, handresults.multi_hand_landmarks[index].landmark[11].y]
+                    middletip = [handresults.multi_hand_landmarks[index].landmark[12].x, handresults.multi_hand_landmarks[index].landmark[12].y]
+                    ringmcp = [handresults.multi_hand_landmarks[index].landmark[13].x, handresults.multi_hand_landmarks[index].landmark[13].y]
+                    ringpip = [handresults.multi_hand_landmarks[index].landmark[14].x, handresults.multi_hand_landmarks[index].landmark[14].y]
+                    ringdip = [handresults.multi_hand_landmarks[index].landmark[15].x, handresults.multi_hand_landmarks[index].landmark[15].y]
+                    ringtip = [handresults.multi_hand_landmarks[index].landmark[16].x, handresults.multi_hand_landmarks[index].landmark[16].y]
+                    pinkymcp = [handresults.multi_hand_landmarks[index].landmark[17].x, handresults.multi_hand_landmarks[index].landmark[17].y]
+                    pinkypip = [handresults.multi_hand_landmarks[index].landmark[18].x, handresults.multi_hand_landmarks[index].landmark[18].y]
+                    pinkydip = [handresults.multi_hand_landmarks[index].landmark[19].x, handresults.multi_hand_landmarks[index].landmark[19].y]
+                    pinkytip = [handresults.multi_hand_landmarks[index].landmark[20].x, handresults.multi_hand_landmarks[index].landmark[20].y]
+                    print(calculate_angle(indexmcp, indexpip, indexdip))
+                lshoulder = [landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].x, landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].y]
                 rshoulder = [landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value].x, landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value].y]
                 lhip = [landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].x, landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].y]
                 rhip = [landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value].x, landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value].y]
                 lknee = [landmarks[mp_pose.PoseLandmark.LEFT_KNEE.value].x, landmarks[mp_pose.PoseLandmark.LEFT_KNEE.value].y]
                 rknee = [landmarks[mp_pose.PoseLandmark.RIGHT_KNEE.value].x, landmarks[mp_pose.PoseLandmark.RIGHT_KNEE.value].y]
                 relbow = [landmarks[mp_pose.PoseLandmark.RIGHT_ELBOW.value].x, landmarks[mp_pose.PoseLandmark.RIGHT_ELBOW.value].y]
+                lwrist = [landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value].x, landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value].y]
                 rwrist = [landmarks[mp_pose.PoseLandmark.RIGHT_WRIST.value].x, landmarks[mp_pose.PoseLandmark.RIGHT_WRIST.value].y]
                 lankle = [landmarks[mp_pose.PoseLandmark.LEFT_ANKLE.value].x, landmarks[mp_pose.PoseLandmark.LEFT_ANKLE.value].y]
                 rankle = [landmarks[mp_pose.PoseLandmark.RIGHT_ANKLE.value].x, landmarks[mp_pose.PoseLandmark.RIGHT_ANKLE.value].y]
                 rheel = [landmarks[mp_pose.PoseLandmark.RIGHT_HEEL.value].x, landmarks[mp_pose.PoseLandmark.RIGHT_HEEL.value].y]
                 lheel = [landmarks[mp_pose.PoseLandmark.LEFT_HEEL.value].x, landmarks[mp_pose.PoseLandmark.LEFT_HEEL.value].y]
-                
+                if firstRound == True:
+                    lenarm = np.sqrt((rshoulder[0] - rwrist[0])**2 + (rshoulder[1] - rwrist[1])**2)
+                    firstRound = False
                 # calculating distances and angles
                 lbleg = np.sqrt((lankle[0] - lknee[0])**2 + (lankle[1] - lknee[1])**2)
                 ltleg = np.sqrt((lknee[0] - lhip[0])**2 + (lknee[1] - lhip[1])**2)
                 lleg = (lbleg + ltleg)
+                xlenarm = np.abs(rshoulder[0] - rwrist[0])
                 print(lleg)
                 #lleg = np.sqrt((lankle[0] - lhip[0])**2 + (lankle[1] - lhip[1])**2)
                 heel_distance = np.sqrt((rheel[0] - lheel[0])**2 + (rheel[1] - lheel[1])**2)
@@ -172,6 +202,10 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
                 else:
                     print("Make sure you punch straight ahead")
                     pass
+                if xlenarm >= lenarm - 0.02:
+                    pass
+                else:
+                    print("Punch striaght ahead")
                 #If all parts of the move are correct:
                 """ if (distgood and lhipgood and lkneegood and rkneegood):
                     print("Good stance")

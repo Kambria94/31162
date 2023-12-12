@@ -57,6 +57,8 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
             rhip = [landmarks[mp_pose.PoseLandmark.RIGHT_HIP].x, landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value].y]
             rknee = [landmarks[mp_pose.PoseLandmark.RIGHT_KNEE].x, landmarks[mp_pose.PoseLandmark.RIGHT_KNEE.value].y]
             rankle = [landmarks[mp_pose.PoseLandmark.RIGHT_ANKLE].x, landmarks[mp_pose.PoseLandmark.RIGHT_ANKLE.value].y]
+            rheel = [landmarks[mp_pose.PoseLandmark.RIGHT_HEEL].x, landmarks[mp_pose.PoseLandmark.RIGHT_HEEL.value].y]
+            lheel = [landmarks[mp_pose.PoseLandmark.LEFT_HEEL].x, landmarks[mp_pose.PoseLandmark.LEFT_HEEL.value].y]
             lwrist = [landmarks[mp_pose.PoseLandmark.LEFT_WRIST].x, landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value].y]
             lelbow = [landmarks[mp_pose.PoseLandmark.LEFT_ELBOW].x, landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].y]
             lshoulder = [landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER].x, landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].y]
@@ -64,18 +66,28 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
             lknee = [landmarks[mp_pose.PoseLandmark.LEFT_KNEE].x, landmarks[mp_pose.PoseLandmark.LEFT_KNEE.value].y]
             lankle = [landmarks[mp_pose.PoseLandmark.LEFT_ANKLE].x, landmarks[mp_pose.PoseLandmark.LEFT_ANKLE.value].y]
             #Measurements
-            rknee = calculate_angle(rhip, rknee , rankle)
-            rhip = calculate_angle(rshoulder, rhip, rknee)
-            kneeup = False
-            snap = False
+            ang_larm = calculate_angle(lwrist, lelbow, lshoulder)
+            ang_rback = calculate_angle(rshoulder, rhip, rknee)
+            ang_rleg = calculate_angle(rhip, rknee , rankle)
+            ang_lleg = calculate_angle(lhip, lknee, lankle,)
+            heel_dist = np.sqrt((rheel[0] - lheel[0])**2 + (rheel[1] - lheel[1])**2)
+            #true/false statements
+            larmgood = False
+            rbackgood = False
+            rleggood = False
+            lleggood = False
+            heelgood = False
+            # Conditions
+        if ang_larm > 70 and ang_larm < 135:
+           larmgood = True
+        else:
+            print("Guard your face")
+            pass
+           
+            
+            
 
-            if (rknee <= 130 and rhip <= 130):
-                print ("Knee Up")
-                kneeup = True
-            if kneeup == True:
-                if rknee >= 160:
-                    snap = True
-            if snap == True and 
+
 
            
             #distance = np.sqrt((rshoulder[0] - rwrist[0])**2 + (rshoulder[1] - rwrist[1])**2)
@@ -85,7 +97,7 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
                 start_time = datetime.datetime.timestamp(datetime.datetime.now())
 
         except:
-            pass
+        pass
         #Render detections
         mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS,
                                   mp_drawing.DrawingSpec(color=(245,117,66), thickness=2, circle_radius=2),

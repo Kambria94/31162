@@ -45,19 +45,26 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
         
         try:
             landmarks = results.pose_landmarks.landmark
-        
             rshoulder = [landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER].x, landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value].y]
             relbow = [landmarks[mp_pose.PoseLandmark.RIGHT_ELBOW].x, landmarks[mp_pose.PoseLandmark.RIGHT_ELBOW.value].y]
             rwrist = [landmarks[mp_pose.PoseLandmark.RIGHT_WRIST].x, landmarks[mp_pose.PoseLandmark.RIGHT_WRIST.value].y]
             lshoulder = [landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER].x, landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER_SHOULDER.value].y]
             lelbow = [landmarks[mp_pose.PoseLandmark.LEFT_ELBOW].x, landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].y]
             lwrist = [landmarks[mp_pose.PoseLandmark.LEFT_WRIST.x, landmarks][mp_pose.PoseLandmark.LEFT_WRIST.value].y]
-            swingangle = calculate_angle(rshoulder, relbow , rwrist) 
-            if (swingangle > 80 and swingangle < 100):
+            rswingangle = calculate_angle(rshoulder, relbow , rwrist)  
+            lswingangle = calculate_angle(lshoulder, lelbow , lwrist) 
+           
+            if (rswingangle >= 80 and rswingangle <= 100) and (lswingangle > 80 and lswingangle > 100):
                 print ("Nice Swinging Position!")
             else:
-                print ("Bad Arm Raise. Try again.")
-            
+                print ("Bad Swinging Position.")
+                
+            if (lswingangle >= 80 and lswingangle <= 100) and (rswingangle > 80 and rswingangle > 100):
+
+                print ("Nice Swinging Position!")
+            else:
+                print ("Bad Swinging Position.")    
+                
             #distance = np.sqrt((rshoulder[0] - rknee[0])**2 + (rshoulder[1] - rknee[1])**2)
             #print(distance)
             if datetime.datetime.timestamp(datetime.datetime.now()) >= start_time+5:

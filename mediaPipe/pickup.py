@@ -59,10 +59,10 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
             rgrabgood = False
            
             
-            if(rgrabangle>45 and rgrabangle<90): 
+            if(rgrabangle>30 and rgrabangle<90): 
                 rgrabgood = True
                 
-            if(lgrabangle>45 and lgrabangle<90): 
+            if(lgrabangle>30 and lgrabangle<90): 
                 lgrabgood = True               
 
            

@@ -53,8 +53,8 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
             lelbow = [landmarks[mp_pose.PoseLandmark.LEFT_ELBOW].x, landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].y]
             lhip = [landmarks[mp_pose.PoseLandmark.LEFT_HIP].x, landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].y] 
                    
-            rgrabangle = calculate_angle(rshoulder, relbow, rhip)
-            lgrabangle = calculate_angle(lshoulder, lelbow, lhip)
+            rgrabangle = calculate_angle(relbow, rshoulder, rhip)
+            lgrabangle = calculate_angle(lelbow, lshoulder, lhip)
             lgrabgood = False
             rgrabgood = False
            

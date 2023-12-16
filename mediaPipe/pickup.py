@@ -68,8 +68,7 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
            
             if rgrabgood == True or lgrabgood == True:
                 print("Nice Grab")
-            else:
-                print ("U SUCK")
+          
                 
 
 

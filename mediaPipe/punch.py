@@ -9,7 +9,6 @@ import mediapipe as mp
 import numpy as np
 import time
 import datetime
-import sys
 
 
 
@@ -41,17 +40,12 @@ def calculate_angle(a,b,c):
 
 #variable to check if it is the first time through the while loop. Once the first round is over, this variable 
 #sets to false
-firstRound = True
-prevdistgood = 0
-prevlhipgood = 0
-prevlkneegood = 0
-prevrkneegood = 0
-prevrelbowgood = 0
-prevxlenarmgood = 0
+dataCaptured = False
 examine_checks = False
 chamber = False
 punch_time = 0
 first_punch_hold = True
+punching = False
 
 
 #Video feed
@@ -59,12 +53,13 @@ width = 2240
 height = 1400
 
 img = cv2.VideoCapture(0)
+
 cv2.namedWindow("Mediapipe feed", cv2.WINDOW_NORMAL) 
 
 cv2.resizeWindow("Mediapipe feed", width, height)
 
 start_punch_hold_time = datetime.datetime.timestamp(datetime.datetime.now()) + 1000000
-
+punch_img = cv2.imread('right_arm_reverse_punch.png')
 
 #setup mediapipe pose instance minimum confidence as 50% with shortened name of "pose"
 with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
@@ -79,7 +74,7 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
     start_time = datetime.datetime.timestamp(presentDate)
     #while the image is open
     while img.isOpened:
-        print("examine_checks is ", examine_checks, " chamber is ", chamber, " firstRound is ", firstRound)
+        print("examine_checks is ", examine_checks, " chamber is ", chamber, " dataCaptured is ", dataCaptured)
         #reading image
         ret, frame = img.read()
         
@@ -94,8 +89,28 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
         image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
         #image = cv2.flip(image, 1)
 
-
-
+        image[150:250,30:131,:] = punch_img[0:100,0:101,:]
+        if punching == False:
+            cv2.putText(image, "1. Turn left",
+                        tuple(np.multiply([0,0.05], [640, 480]).astype(int)),
+                        cv2.FONT_HERSHEY_PLAIN, 2, (255,255,255), 2, cv2.LINE_AA
+                        ) 
+            cv2.putText(image, "2. Get in chamber postition",
+                    tuple(np.multiply([0,0.13], [640, 480]).astype(int)),
+                    cv2.FONT_HERSHEY_PLAIN, 2, (255,255,255), 2, cv2.LINE_AA
+                    ) 
+            cv2.putText(image, "3. Right arm punch, Left foot step",
+                    tuple(np.multiply([0,0.21], [640, 480]).astype(int)),
+                    cv2.FONT_HERSHEY_PLAIN, 2, (255,255,255), 2, cv2.LINE_AA
+                )
+            cv2.putText(image, "4. Go back to chamber position",
+                        tuple(np.multiply([0,0.29], [640, 480]).astype(int)),
+                        cv2.FONT_HERSHEY_PLAIN, 2, (255,255,255), 2, cv2.LINE_AA
+                    )
+            if dataCaptured == True:
+                punch_capture = cv2.imread('punch_capture.jpg')
+                image[0:480,0:640,:] = punch_capture[0:480,0:640,:]
+       
         #Extract landmarks
         #enters this if statement every 10 seconds - if the current time is or is past the starting time + 10 
         #seconds. So only enters if it is 10 seconds past the start time
@@ -130,18 +145,7 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
             drwist_rhip = np.sqrt((rwrist[0]-real_rhip[0])**2 + (rwrist[1]-real_rhip[1])**2)
 
             if lknee_angle >= 145 and rknee_angle >= 145 and rhip_angle >= 160 and drwist_rhip <= (np.sqrt((rshoulder[0] - rwrist[0])**2 + (rshoulder[1] - rwrist[1])**2))/4:
-                cv2.putText(image, "1. Turn left",
-                        tuple(np.multiply([0,0.05], [640, 480]).astype(int)),
-                        cv2.FONT_HERSHEY_PLAIN, 2, (255,255,255), 2, cv2.LINE_AA
-                        ) 
-                cv2.putText(image, "2. Get in chamber postition",
-                        tuple(np.multiply([0,0.13], [640, 480]).astype(int)),
-                        cv2.FONT_HERSHEY_PLAIN, 2, (255,255,255), 2, cv2.LINE_AA
-                        ) 
-                cv2.putText(image, "3. Right arm punch, Left foot step",
-                        tuple(np.multiply([0,0.21], [640, 480]).astype(int)),
-                        cv2.FONT_HERSHEY_PLAIN, 2, (255,255,255), 2, cv2.LINE_AA
-                    )
+                punching = False
                 chamber = True
                 examine_checks = False
                 lenarm = np.sqrt((rshoulder[0] - rwrist[0])**2 + (rshoulder[1] - rwrist[1])**2)
@@ -151,14 +155,11 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
                 ltleg = np.sqrt((lknee[0] - lhip[0])**2 + (lknee[1] - lhip[1])**2)
                 #total length of leg (bottom+top) - used for ratio for distance between legs during step
                 lleg = (lbleg + ltleg)
-                if firstRound == False:
-                    punch_capture = cv2.imread('punch_capture.jpg')
-                    cv2.imshow('Punch Capture', punch_capture)
+                
                 
             else:
                 if chamber == True:
                     examine_checks = True
-                    start_punch_hold_time = datetime.datetime.timestamp(datetime.datetime.now())
                     start_punch_time = datetime.datetime.timestamp(datetime.datetime.now())
                     first_punch_hold = True
                 chamber = False
@@ -274,30 +275,31 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
                     xlenarmgood = True
                 else:
                     pass
-                if rshoulder_angle >= 40 and rshoulder_angle <= 140 and rwrist[0] > lankle[0] and rwrist[0] > rankle[0]:
+                if rshoulder_angle >= 40 and rshoulder_angle <= 140 and rwrist[0] > lankle[0] and rwrist[0] > rankle[0] and relbow[0] > rshoulder[0] and relbow_angle >= 90 and chamber == False:
+                    punching = True
                     if first_punch_hold == True:
                         punch_speed = datetime.datetime.timestamp(datetime.datetime.now())-start_punch_time
                         start_punch_hold_time = datetime.datetime.timestamp(datetime.datetime.now())
 
                     #if prevdistgood != distgood or prevlhipgood != lhipgood or prevlkneegood != lkneegood or prevrkneegood != rkneegood or prevrelbowgood != relbowgood or prevxlenarmgood != xlenarmgood:
                      #   start_punch_hold_time = datetime.datetime.timestamp(datetime.datetime.now())
-                    if datetime.datetime.timestamp(datetime.datetime.now()) >= start_punch_hold_time and datetime.datetime.timestamp(datetime.datetime.now()) < start_punch_hold_time+1:
+                    if datetime.datetime.timestamp(datetime.datetime.now()) >= start_punch_hold_time and datetime.datetime.timestamp(datetime.datetime.now()) < start_punch_hold_time+0.5:
                         cv2.putText(image, "3",
                             tuple(np.multiply([0,0.12], [640, 480]).astype(int)),
                             cv2.QT_FONT_NORMAL, 2, (255,255,255), 2, cv2.LINE_AA
                         )
-                    elif datetime.datetime.timestamp(datetime.datetime.now()) >= start_punch_hold_time+1 and datetime.datetime.timestamp(datetime.datetime.now()) < start_punch_hold_time+2:
+                    elif datetime.datetime.timestamp(datetime.datetime.now()) >= start_punch_hold_time+0.5 and datetime.datetime.timestamp(datetime.datetime.now()) < start_punch_hold_time+1:
                         cv2.putText(image, "2",
                             tuple(np.multiply([0,0.12], [640, 480]).astype(int)),
                             cv2.QT_FONT_NORMAL, 2, (255,255,255), 2, cv2.LINE_AA
                         ) 
-                    elif datetime.datetime.timestamp(datetime.datetime.now()) >= start_punch_hold_time+2 and datetime.datetime.timestamp(datetime.datetime.now()) < start_punch_hold_time+3:
+                    elif datetime.datetime.timestamp(datetime.datetime.now()) >= start_punch_hold_time+1 and datetime.datetime.timestamp(datetime.datetime.now()) < start_punch_hold_time+1.5:
                         cv2.putText(image, "1",
                             tuple(np.multiply([0,0.12], [640, 480]).astype(int)),
                             cv2.QT_FONT_NORMAL, 2, (255,255,255), 2, cv2.LINE_AA
                         ) 
-                    elif datetime.datetime.timestamp(datetime.datetime.now()) >= start_punch_hold_time+3:
-                        cv2.putText(image, "Captured!",
+                    elif datetime.datetime.timestamp(datetime.datetime.now()) >= start_punch_hold_time+1.5:
+                        cv2.putText(image, "Feedback:",
                             tuple(np.multiply([0,0.05], [640, 480]).astype(int)),
                             cv2.QT_FONT_NORMAL, 1, (255,255,255), 2, cv2.LINE_AA
                         ) 
@@ -445,33 +447,18 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
                                 tuple(np.multiply([text_width/640, 0.05], [640, 480]).astype(int)),
                                 cv2.QT_FONT_NORMAL, 1, (0,0,255), 2, cv2.LINE_AA
                             )
+                        #capture_image = cv2.resize(image, (320, 240))
                         cv2.imwrite('punch_capture.jpg', image)
+                        dataCaptured = True
                         examine_checks = False
                     first_punch_hold = False
 
                 else:
-                    cv2.putText(image, "1. Turn left",
-                        tuple(np.multiply([0,0.05], [640, 480]).astype(int)),
-                        cv2.FONT_HERSHEY_PLAIN, 2, (255,255,255), 2, cv2.LINE_AA
-                        ) 
-                    cv2.putText(image, "2. Get in chamber postition",
-                            tuple(np.multiply([0,0.13], [640, 480]).astype(int)),
-                            cv2.FONT_HERSHEY_PLAIN, 2, (255,255,255), 2, cv2.LINE_AA
-                            ) 
-                    cv2.putText(image, "3. Right arm punch, Left foot step",
-                            tuple(np.multiply([0,0.21], [640, 480]).astype(int)),
-                            cv2.FONT_HERSHEY_PLAIN, 2, (255,255,255), 2, cv2.LINE_AA
-                        )
+                    punching = False
                          
 
 
 
-                prevdistgood = distgood
-                prevlhipgood = lhipgood
-                prevlkneegood = lkneegood
-                prevrkneegood = rkneegood
-                prevrelbowgood = relbowgood
-                prevxlenarmgood = xlenarmgood
                 """
                 if (relbowgood and rshouldergood):
                     print("Good punch")
@@ -481,7 +468,6 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
                 #lbleg = np.sqrt((lankle[0] - lknee[0])**2 + (lankle[1] - lknee[1])**2)
                 #ltleg = np.sqrt((lknee[0] - lhip[0])**2 + (lknee[1] - lhip[1])**2)
                 #lleg = (lbleg + ltleg)
-                firstRound = False
         except:
             #print("Ignoring unexpected exception")
             pass

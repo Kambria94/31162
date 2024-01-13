@@ -52,6 +52,8 @@ punch_time = 0
 first_punch_hold = True
 punching = False
 punchDone = False
+instructions_font_size = 1.5
+firstLoop = True
 
 
 #Video feed
@@ -93,7 +95,6 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
     #current time - used so data prints every 5 seconds
     start_time = datetime.datetime.timestamp(presentDate)
     #while the image is open
-    getInChamber.play()
     while img.isOpened:
         print("chamber is ", chamber, " dataCaptured is ", dataCaptured)
         #reading image
@@ -115,20 +116,23 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
         if punching == False:
             cv2.putText(image, "1. Turn left",
                         tuple(np.multiply([0,0.05], [640, 480]).astype(int)),
-                        cv2.FONT_HERSHEY_PLAIN, 2, (255,255,255), 2, cv2.LINE_AA
+                        cv2.FONT_HERSHEY_PLAIN, instructions_font_size, (255,255,255), 2, cv2.LINE_AA
                         ) 
             cv2.putText(image, "2. Get in chamber postition",
                     tuple(np.multiply([0,0.13], [640, 480]).astype(int)),
-                    cv2.FONT_HERSHEY_PLAIN, 2, (255,255,255), 2, cv2.LINE_AA
+                    cv2.FONT_HERSHEY_PLAIN, instructions_font_size, (255,255,255), 2, cv2.LINE_AA
                     ) 
             cv2.putText(image, "3. Right arm punch, Left foot step",
                     tuple(np.multiply([0,0.21], [640, 480]).astype(int)),
-                    cv2.FONT_HERSHEY_PLAIN, 2, (255,255,255), 2, cv2.LINE_AA
+                    cv2.FONT_HERSHEY_PLAIN, instructions_font_size, (255,255,255), 2, cv2.LINE_AA
                 )
-            cv2.putText(image, "4. Go back to chamber position",
+            cv2.putText(image, "4. Back to chamber position",
                         tuple(np.multiply([0,0.29], [640, 480]).astype(int)),
-                        cv2.FONT_HERSHEY_PLAIN, 2, (255,255,255), 2, cv2.LINE_AA
+                        cv2.FONT_HERSHEY_PLAIN, instructions_font_size, (255,255,255), 2, cv2.LINE_AA
                     )
+            if firstLoop == True:
+                getInChamber.play()
+            firstLoop = False
             if dataCaptured == True:
                 punch_capture = cv2.imread('images/punch_capture.jpg')
                 image[0:480,0:640,:] = punch_capture[0:480,0:640,:]
@@ -581,6 +585,7 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
 
 img.release()
 cv2.destroyAllWindows()
+
 
 
 

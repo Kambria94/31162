@@ -68,20 +68,9 @@ cv2.resizeWindow("Mediapipe feed", width, height)
 
 start_punch_hold_time = datetime.datetime.timestamp(datetime.datetime.now()) + 1000000
 punch_img = cv2.imread('images/right_arm_reverse_punch.png')
-backToChamber = pygame.mixer.Sound("audio/Back to Chamber.mp3")
-feetCloser = pygame.mixer.Sound("audio/Feet closer.mp3")
-feetFurther = pygame.mixer.Sound("audio/Feet Further.mp3")
-getInChamber = pygame.mixer.Sound("audio/Get in Chamber start.mp3")
-greatJob = pygame.mixer.Sound("audio/Great Job.mp3")
-hold = pygame.mixer.Sound("audio/Hold.mp3")
-leftKneeLess = pygame.mixer.Sound("audio/Left Knee Less.mp3")
-leftKneeMore = pygame.mixer.Sound("audio/Left Knee More.mp3")
-punchStraight = pygame.mixer.Sound("audio/Punch Straight ahead.mp3")
-reversePunch = pygame.mixer.Sound("audio/Right hand reverse punch.mp3")
-rightKneeLess = pygame.mixer.Sound("audio/Right knee Less.mp3")
-rightKneeMore = pygame.mixer.Sound("audio/Right Knee More.mp3")
-straightenElbow = pygame.mixer.Sound("audio/Straighten Right elbow.mp3")
-tryAgain = pygame.mixer.Sound("audio/Try Again.mp3")
+
+
+#tryAgain = pygame.mixer.music("audio/Try Again.mp3")
 
 #setup mediapipe pose instance minimum confidence as 50% with shortened name of "pose"
 with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
@@ -131,11 +120,59 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
                         cv2.FONT_HERSHEY_PLAIN, instructions_font_size, (255,255,255), 2, cv2.LINE_AA
                     )
             if firstLoop == True:
-                getInChamber.play()
+                getInChamber = pygame.mixer.music.load("audio/Get in Chamber start.mp3")
+                pygame.mixer.music.play()
             firstLoop = False
             if dataCaptured == True:
                 punch_capture = cv2.imread('images/punch_capture.jpg')
-                image[0:480,0:640,:] = punch_capture[0:480,0:640,:]
+                image[0:480,0:640,:] = punch_capture[0:480,0:640,:]   
+                if pygame.mixer.music.get_busy() == False:                         
+                    if feetcloser == True:
+                        feetCloser = pygame.mixer.music.load("audio/Feet closer.mp3")
+                        pygame.mixer.music.play()
+                        feetcloser = False
+                    elif feetfarther == True:
+                        feetFurther = pygame.mixer.music.load("audio/Feet Further.mp3")
+                        pygame.mixer.music.play()
+                        feetfarther = False
+                    elif leanback == True:
+                        ##################ayan to do#########################
+                        feetFurther = pygame.mixer.music.load("audio/Feet Further.mp3")
+                        pygame.mixer.music.play()
+                        leanback = False
+                    elif leanforward == True:
+                        ##################ayan to do#########################
+                        feetFurther = pygame.mixer.music.load("audio/Feet Further.mp3")
+                        pygame.mixer.music.play()
+                        leanforward = False
+                    elif bendlkneemore == True:
+                        leftKneeMore = pygame.mixer.music.load("audio/Left Knee More.mp3")
+                        pygame.mixer.music.play()
+                        bendlkneemore = False
+                    elif bendlkneeless == True:
+                        leftKneeLess = pygame.mixer.music.load("audio/Left Knee Less.mp3")
+                        pygame.mixer.music.play()
+                        bendlkneeless = False
+                    elif bendrkneemore == True:
+                        rightKneeMore = pygame.mixer.music.load("audio/Right Knee More.mp3")
+                        pygame.mixer.music.play()
+                        bendrkneemore = False
+                    elif bendrkneeless == True:
+                        rightKneeLess = pygame.mixer.music.load("audio/Right knee Less.mp3")
+                        pygame.mixer.music.play()
+                        bendrkneeless = False
+                    elif relbowgood == False:
+                        straightenElbow = pygame.mixer.music.load("audio/Straighten Right elbow.mp3")
+                        pygame.mixer.music.play()
+                        relbowgood = True
+                    elif xlenarmgood == False:
+                        punchStraight = pygame.mixer.music.load("audio/Punch Straight ahead.mp3")
+                        pygame.mixer.music.play()
+                        xlenarmgood = True
+                    elif allGood == True:
+                        greatJob = pygame.mixer.music.load("audio/Great Job.mp3")
+                        pygame.mixer.music.play()
+                        allGood = False
        
         #Extract landmarks
         #enters this if statement every 10 seconds - if the current time is or is past the starting time + 10 
@@ -317,7 +354,8 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
                 if first_punch_hold == True:
                     punch_speed = datetime.datetime.timestamp(datetime.datetime.now())-start_punch_time
                     start_punch_hold_time = datetime.datetime.timestamp(datetime.datetime.now())
-                    hold.play()
+                    hold = pygame.mixer.music.load("audio/Hold.mp3")
+                    pygame.mixer.music.play()
 
                 #if prevdistgood != distgood or prevlhipgood != lhipgood or prevlkneegood != lkneegood or prevrkneegood != rkneegood or prevrelbowgood != relbowgood or prevxlenarmgood != xlenarmgood:
                     #   start_punch_hold_time = datetime.datetime.timestamp(datetime.datetime.now())
@@ -340,7 +378,8 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
                         cv2.QT_FONT_NORMAL, 2, (255,255,255), 2, cv2.LINE_AA
                     ) 
                 elif datetime.datetime.timestamp(datetime.datetime.now()) >= start_punch_hold_time+1.5:
-                    backToChamber.play()
+                    backToChamber = pygame.mixer.music.load("audio/Back to Chamber.mp3")
+                    pygame.mixer.music.play()
                     cv2.putText(image, "Feedback:",
                         tuple(np.multiply([0,0.05], [640, 480]).astype(int)),
                         cv2.QT_FONT_NORMAL, 1, (255,255,255), 2, cv2.LINE_AA
@@ -585,7 +624,6 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
 
 img.release()
 cv2.destroyAllWindows()
-
 
 
 

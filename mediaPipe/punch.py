@@ -51,6 +51,7 @@ chamber = False
 punch_time = 0
 first_punch_hold = True
 punching = False
+punchDone = False
 
 
 #Video feed
@@ -110,7 +111,7 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
         #image = cv2.flip(image, 1)
 
         #Providing instructions S1
-        image[150:250,30:131,:] = punch_img[0:100,0:101,:]
+        image[340:440,519:620,:] = punch_img[0:100,0:101,:]
         if punching == False:
             cv2.putText(image, "1. Turn left",
                         tuple(np.multiply([0,0.05], [640, 480]).astype(int)),
@@ -169,6 +170,7 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
             if lknee_angle >= 145 and rknee_angle >= 145 and rhip_angle >= 160 and drwist_rhip <= (np.sqrt((rshoulder[0] - rwrist[0])**2 + (rshoulder[1] - rwrist[1])**2))/4:
                 punching = False
                 chamber = True
+                punchDone = False
                 #calibration
                 lenarm = np.sqrt((rshoulder[0] - rwrist[0])**2 + (rshoulder[1] - rwrist[1])**2)
                 #length of bottom of left leg (knee to ankle)
@@ -177,13 +179,13 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
                 ltleg = np.sqrt((lknee[0] - lhip[0])**2 + (lknee[1] - lhip[1])**2)
                 #total length of leg (bottom+top) - used for ratio for distance between legs during step
                 lenleg = (lbleg + ltleg)
+
                 
                 
             else:
                 if chamber == True:
                     start_punch_time = datetime.datetime.timestamp(datetime.datetime.now())
                     first_punch_hold = True
-                    dataCaptured = False
                 chamber = False
                 #sys.exit("done")
                     
@@ -208,7 +210,12 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
             
             
             #checking for punch S3
-            if rshoulder_angle >= 40 and rshoulder_angle <= 140 and rwrist[0] > lankle[0] and rwrist[0] > rankle[0] and relbow[0] > rshoulder[0] and relbow_angle >= 90 and chamber == False and dataCaptured == False:
+            if rshoulder_angle >= 40 and rshoulder_angle <= 140 and rwrist[0] > lankle[0] and rwrist[0] > rankle[0] and relbow[0] > rshoulder[0] and relbow_angle >= 90 and chamber == False and punchDone == False:
+                #cv2.putText(image, "punching",
+                 #       tuple(np.multiply([0,0.12], [640, 480]).astype(int)),
+                  #      cv2.QT_FONT_NORMAL, 2, (255,255,255), 2, cv2.LINE_AA
+                   # )
+                dataCaptured = False
                 punching = True
                 #pose evaluation S4
                 # Left leg distance, left hip angle, left knee angle
@@ -228,7 +235,7 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
                 bendrkneeless = False
                 relbowgood = False
                 xlenarmgood = False
-                allGood = False 
+                allGood = True 
                 #2 examine heel distance
                 #measures distance between right heel and left 
                 #ratio of length of leg:distance between heels should be 1.6-2.45 
@@ -296,8 +303,6 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
                     
                     pass
                 
-                if distgood == True and lkneegood == True and rkneegood == True and lhipgood == True and xlenarmgood == True and relbowgood == True:
-                    allGood = True
 
                 #7 examine position of right arm
                 #the x-axis length of the arm should be same as real length of arm with margin of 0.02 units
@@ -308,6 +313,7 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
                 if first_punch_hold == True:
                     punch_speed = datetime.datetime.timestamp(datetime.datetime.now())-start_punch_time
                     start_punch_hold_time = datetime.datetime.timestamp(datetime.datetime.now())
+                    hold.play()
 
                 #if prevdistgood != distgood or prevlhipgood != lhipgood or prevlkneegood != lkneegood or prevrkneegood != rkneegood or prevrelbowgood != relbowgood or prevxlenarmgood != xlenarmgood:
                     #   start_punch_hold_time = datetime.datetime.timestamp(datetime.datetime.now())
@@ -335,153 +341,202 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
                         tuple(np.multiply([0,0.05], [640, 480]).astype(int)),
                         cv2.QT_FONT_NORMAL, 1, (255,255,255), 2, cv2.LINE_AA
                     ) 
+                    cv2.putText(image, "Feet Distance: ",
+                            tuple(np.multiply([0, 0.61], [640, 480]).astype(int)),
+                            cv2.QT_FONT_NORMAL, 1, (255,0,0), 2, cv2.LINE_AA
+                    )
                     if feetcloser == True:
+                        allGood = False
                         text_width, text_height = cv2.getTextSize(
-                            "Pull feet closer together", cv2.QT_FONT_NORMAL, 1, 2
+                            "Feet Distance: ", cv2.QT_FONT_NORMAL, 1, 2
                             )[0]
-                        cv2.putText(image, "Pull feet closer together",
-                            tuple(np.multiply([lankle[0]-text_width/1280, lankle[1]+0.05], [640, 480]).astype(int)),
+                        cv2.putText(image, "Closer together",
+                            tuple(np.multiply([text_width/640, 0.61], [640, 480]).astype(int)),
                             cv2.QT_FONT_NORMAL, 1, (0,0,255), 2, cv2.LINE_AA
                         )
                     if feetfarther == True:
+                        allGood = False
                         text_width, text_height = cv2.getTextSize(
-                            "Put feet farther apart", cv2.QT_FONT_NORMAL, 1, 2
+                            "Feet Distance: ", cv2.QT_FONT_NORMAL, 1, 2
                             )[0]
-                        cv2.putText(image, "Put feet farther apart",
-                            tuple(np.multiply([lankle[0]-text_width/1280, lankle[1]+0.05], [640, 480]).astype(int)),
+                        cv2.putText(image, "Farther apart",
+                            tuple(np.multiply([text_width/640, 0.61], [640, 480]).astype(int)),
                             cv2.QT_FONT_NORMAL, 1, (0,0,255), 2, cv2.LINE_AA
                         )
-                    if distgood == True:
+                    """if distgood == True:
                         text_width, text_height = cv2.getTextSize(
                             "Feet distance is good", cv2.QT_FONT_NORMAL, 1, 2
                             )[0]
                         cv2.putText(image, "Feet distance is good",
                             tuple(np.multiply([lankle[0]-text_width/1280, lankle[1]+0.05], [640, 480]).astype(int)),
                             cv2.QT_FONT_NORMAL, 1, (0,255,0), 2, cv2.LINE_AA
-                        )
+                        )"""
+                    cv2.putText(image, "Hip: ",
+                            tuple(np.multiply([0, 0.37], [640, 480]).astype(int)),
+                            cv2.QT_FONT_NORMAL, 1, (255,0,0), 2, cv2.LINE_AA
+                    )
                     if leanforward == True:
+                        allGood = False
                         text_width, text_height = cv2.getTextSize(
-                            "Lean forward more", cv2.QT_FONT_NORMAL, 1, 2
+                            "Hip: ", cv2.QT_FONT_NORMAL, 1, 2
                             )[0]
                         cv2.putText(image, "Lean forward more",
-                            tuple(np.multiply([rhip[0]-text_width/1280, rhip[1]-0.05], [640, 480]).astype(int)),
+                            tuple(np.multiply([text_width/640, 0.37], [640, 480]).astype(int)),
                             cv2.QT_FONT_NORMAL, 1, (0,0,255), 2, cv2.LINE_AA
                         )
                     if leanback == True:
+                        allGood = False
                         text_width, text_height = cv2.getTextSize(
-                            "Lean back more", cv2.QT_FONT_NORMAL, 1, 2
+                            "Hip: ", cv2.QT_FONT_NORMAL, 1, 2
                             )[0]
                         cv2.putText(image, "Lean back more",
-                            tuple(np.multiply([rhip[0]-text_width/1280, rhip[1]-0.05], [640, 480]).astype(int)),
+                            tuple(np.multiply([text_width/640, 0.37], [640, 480]).astype(int)),
                             cv2.QT_FONT_NORMAL, 1, (0,0,255), 2, cv2.LINE_AA
                         )
-                    if lhipgood == True:
+                    """if lhipgood == True:
                         text_width, text_height = cv2.getTextSize(
                             "Back angle is good", cv2.QT_FONT_NORMAL, 1, 2
                             )[0]
                         cv2.putText(image, "Back angle is good",
                             tuple(np.multiply([rhip[0]-text_width/1280, rhip[1]-0.05], [640, 480]).astype(int)),
                             cv2.QT_FONT_NORMAL, 1, (0,255,0), 2, cv2.LINE_AA
-                        )
+                        )"""
+                    cv2.putText(image, "Left Knee: ",
+                            tuple(np.multiply([0, 0.45], [640, 480]).astype(int)),
+                            cv2.QT_FONT_NORMAL, 1, (255,0,0), 2, cv2.LINE_AA
+                    )
                     if bendlkneemore == True:
+                        allGood = False
                         text_width, text_height = cv2.getTextSize(
-                            "Bend left knee more", cv2.QT_FONT_NORMAL, 1, 2
+                            "Left Knee: ", cv2.QT_FONT_NORMAL, 1, 2
                             )[0]
-                        cv2.putText(image, "Bend left knee more",
-                            tuple(np.multiply([lknee[0]-text_width/1280, lknee[1]-0.05], [640, 480]).astype(int)),
+                        cv2.putText(image, "Bend more",
+                            tuple(np.multiply([text_width/640, 0.45], [640, 480]).astype(int)),
                             cv2.QT_FONT_NORMAL, 1, (0,0,255), 2, cv2.LINE_AA
                         )
                     if bendlkneeless == True:
+                        allGood = False
                         text_width, text_height = cv2.getTextSize(
-                            "Bend left knee less", cv2.QT_FONT_NORMAL, 1, 2
+                            "Left Knee: ", cv2.QT_FONT_NORMAL, 1, 2
                             )[0]
-                        cv2.putText(image, "Bend left knee less",
-                            tuple(np.multiply([lknee[0]-text_width/1280, lknee[1]-0.05], [640, 480]).astype(int)),
+                        cv2.putText(image, "Bend less",
+                            tuple(np.multiply([text_width/640, 0.45], [640, 480]).astype(int)),
                             cv2.QT_FONT_NORMAL, 1, (0,0,255), 2, cv2.LINE_AA
                         )
-                    if lkneegood == True:
+                    """if lkneegood == True:
                         text_width, text_height = cv2.getTextSize(
                             "Left knee angle is good", cv2.QT_FONT_NORMAL, 1, 2
                             )[0]
                         cv2.putText(image, "Left knee angle is good",
                             tuple(np.multiply([lknee[0]-text_width/1280, lknee[1]-0.05], [640, 480]).astype(int)),
                             cv2.QT_FONT_NORMAL, 1, (0,255,0), 2, cv2.LINE_AA
-                        )
+                        )"""
+                    cv2.putText(image, "Right Knee: ",
+                            tuple(np.multiply([0, 0.53], [640, 480]).astype(int)),
+                            cv2.QT_FONT_NORMAL, 1, (255,0,0), 2, cv2.LINE_AA
+                    )
                     if bendrkneemore == True:
+                        allGood = False
                         text_width, text_height = cv2.getTextSize(
-                            "Bend right knee more", cv2.QT_FONT_NORMAL, 1, 2
+                            "Right Knee: ", cv2.QT_FONT_NORMAL, 1, 2
                             )[0]
-                        cv2.putText(image, "Bend right knee more",
-                            tuple(np.multiply([rknee[0]-text_width/1280, rknee[1]+0.05], [640, 480]).astype(int)),
+                        cv2.putText(image, "Bend more",
+                            tuple(np.multiply([text_width/640, 0.53], [640, 480]).astype(int)),
                             cv2.QT_FONT_NORMAL, 1, (0,0,255), 2, cv2.LINE_AA
                         )
+                
                     if bendrkneeless == True:
+                        allGood = False
                         text_width, text_height = cv2.getTextSize(
-                            "Bend right knee less", cv2.QT_FONT_NORMAL, 1, 2
+                            "Right Knee: ", cv2.QT_FONT_NORMAL, 1, 2
                             )[0]
-                        cv2.putText(image, "Bend right knee less",
-                            tuple(np.multiply([rknee[0]-text_width/1280, rknee[1]+0.05], [640, 480]).astype(int)),
+                        cv2.putText(image, "Bend less",
+                            tuple(np.multiply([text_width/640, 0.53], [640, 480]).astype(int)),
                             cv2.QT_FONT_NORMAL, 1, (0,0,255), 2, cv2.LINE_AA
                         )
-                    if rkneegood == True:
+                    """if rkneegood == True:
                         text_width, text_height = cv2.getTextSize(
                             "Right knee angle is good", cv2.QT_FONT_NORMAL, 1, 2
                             )[0]
                         cv2.putText(image, "Right knee angle is good",
                             tuple(np.multiply([rknee[0]-text_width/1280, rknee[1]+0.05], [640, 480]).astype(int)),
                             cv2.QT_FONT_NORMAL, 1, (0,255,0), 2, cv2.LINE_AA
-                        )
-                    if relbowgood == True:
+                        )"""
+                    """if relbowgood == True:
                         text_width, text_height = cv2.getTextSize(
                             "Right elbow is straight", cv2.QT_FONT_NORMAL, 1, 2
                             )[0]
                         cv2.putText(image, "Right elbow is straight",
                             tuple(np.multiply([relbow[0]-text_width/1280, relbow[1]-0.15], [640, 480]).astype(int)),
                             cv2.QT_FONT_NORMAL, 1, (0,255,0), 2, cv2.LINE_AA
-                        )
+                        )"""
+                    cv2.putText(image, "Elbow: ",
+                            tuple(np.multiply([0, 0.21], [640, 480]).astype(int)),
+                            cv2.QT_FONT_NORMAL, 1, (255,0,0), 2, cv2.LINE_AA
+                    )
                     if relbowgood == False:
+                        allGood = False
                         text_width, text_height = cv2.getTextSize(
-                            "Make sure right elbow is straight", cv2.QT_FONT_NORMAL, 1, 2
+                            "Elbow: ", cv2.QT_FONT_NORMAL, 1, 2
                             )[0]
-                        cv2.putText(image, "Make sure right elbow is straight",
-                            tuple(np.multiply([relbow[0]-text_width/1280, relbow[1]-0.15], [640, 480]).astype(int)),
+                        cv2.putText(image, "Straighten right elbow",
+                            tuple(np.multiply([text_width/640, 0.21], [640, 480]).astype(int)),
                             cv2.QT_FONT_NORMAL, 1, (0,0,255), 2, cv2.LINE_AA
                         )
-                    if xlenarmgood == True:
+                    """if xlenarmgood == True:
                         text_width, text_height = cv2.getTextSize(
                             "Punching straight ahead", cv2.QT_FONT_NORMAL, 1, 2
                             )[0]
                         cv2.putText(image, "Punching straight ahead",
                             tuple(np.multiply([rshoulder[0]-text_width/1280, rshoulder[1]+0.05], [640, 480]).astype(int)),
                             cv2.QT_FONT_NORMAL, 1, (0,255,0), 2, cv2.LINE_AA
-                        )
+                        )"""
+                    cv2.putText(image, "Shoulder: ",
+                            tuple(np.multiply([0, 0.29], [640, 480]).astype(int)),
+                            cv2.QT_FONT_NORMAL, 1, (255,0,0), 2, cv2.LINE_AA
+                    )
                     if xlenarmgood == False:
+                        allGood = False
                         text_width, text_height = cv2.getTextSize(
-                            "Make sure you punch straight ahead", cv2.QT_FONT_NORMAL, 1, 2
-                            )[0]
-                        cv2.putText(image, "Make sure you punch straight ahead",
-                            tuple(np.multiply([rshoulder[0]-text_width/1280, rshoulder[1]+0.05], [640, 480]).astype(int)),
+                            "Shoulder: ", cv2.QT_FONT_NORMAL, 1, 2
+                        )[0]
+                        cv2.putText(image, "Punch straight ahead",
+                            tuple(np.multiply([text_width/640, 0.29], [640, 480]).astype(int)),
                             cv2.QT_FONT_NORMAL, 1, (0,0,255), 2, cv2.LINE_AA
                         )
-                    if punch_speed <= 0.4:
-                        text_width, text_height = cv2.getTextSize(
-                            "Punch is fast", cv2.QT_FONT_NORMAL, 1, 2
-                            )[0]
-                        cv2.putText(image, str(int(round(punch_speed*1000, 0)))+" milliseconds",
-                            tuple(np.multiply([text_width/640, 0.05], [640, 480]).astype(int)),
+
+                    cv2.putText(image, "Punch Time: ",
+                        tuple(np.multiply([0, 0.13], [640, 480]).astype(int)),
+                        cv2.QT_FONT_NORMAL, 1, (255,0,0), 2, cv2.LINE_AA
+                    )
+                    text_width, text_height = cv2.getTextSize(
+                        "Punch Time: ", cv2.QT_FONT_NORMAL, 1, 2
+                        )[0]
+                    if punch_speed > 0.3:
+                        allGood = False
+                        cv2.putText(image, str(int(round(punch_speed*1000, 0)))+" ms",
+                            tuple(np.multiply([text_width/640, 0.13], [640, 480]).astype(int)),
+                            cv2.QT_FONT_NORMAL, 1, (0,0,255), 2, cv2.LINE_AA
+                        )
+                    else:
+                        cv2.putText(image, str(int(round(punch_speed*1000, 0)))+" ms",
+                            tuple(np.multiply([text_width/640, 0.13], [640, 480]).astype(int)),
                             cv2.QT_FONT_NORMAL, 1, (0,255,0), 2, cv2.LINE_AA
                         )
-                    if punch_speed > 0.3:
+                    
+                    if allGood == True:
+                        greatJob.play()
                         text_width, text_height = cv2.getTextSize(
-                            "Punch faster", cv2.QT_FONT_NORMAL, 1, 2
-                            )[0]
-                        cv2.putText(image, str(int(round(punch_speed*1000, 0)))+" milliseconds",
-                            tuple(np.multiply([text_width/640, 0.05], [640, 480]).astype(int)),
-                            cv2.QT_FONT_NORMAL, 1, (0,0,255), 2, cv2.LINE_AA
+                            "Great Punch!", cv2.QT_FONT_NORMAL, 1, 2
+                        )[0]
+                        cv2.putText(image, "Great Punch!",
+                            tuple(np.multiply([0.5-text_width/1280, 0.13], [640, 480]).astype(int)),
+                            cv2.QT_FONT_NORMAL, 1, (0,255,0), 2, cv2.LINE_AA
                         )
                     #capture_image = cv2.resize(image, (320, 240))
                     cv2.imwrite('images/punch_capture.jpg', image)
                     dataCaptured = True
+                    punchDone = True
                 first_punch_hold = False
 
             else:

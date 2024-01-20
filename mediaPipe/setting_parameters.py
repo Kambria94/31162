@@ -32,7 +32,7 @@ max_values = [180, 180, 162, 172, 0.909]
 label_font_str = 'Helvetica 12 bold'
 # Header row
 image = Image.open("pose_perfect.png")
-image = image.resize((116, 30), Image.ANTIALIAS)
+image = image.resize((116, 30), Image.Resampling.LANCZOS)
 photo = ImageTk.PhotoImage(image)
 tk.Label(window, image=photo).grid(row=0, column=1, padx=10, pady=10)
 

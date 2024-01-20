@@ -28,20 +28,15 @@ def calculate_angle(a,b,c):
    a = np.array(a) #first point coordinates
    b = np.array(b) #middle point coordinates
    c = np.array(c) #end point coordinates
-
+   
    #calculate radians using arctan and coverting it to degrees
    radians = np.arctan2(c[1] - b[1], c[0] - b[0]) - np.arctan2(a[1] - b[1], a[0] - b[0])
    angle = np.abs(radians*180/np.pi)
-
-    #if the angle is greater than 180, use the angle on the other side, or 360-angle
-   # for example if angle is 200 degrees, it makes it 160.
+   #if the angle is greater than 180, use the angle on the other side, 
+   #or 360-angle for example if angle is 200 degrees, it makes it 160.
    if angle > 180:
        angle = 360 - angle
-
-
    return angle
-
-
 
 
 #variable to check if it is the first time through the while loop. Once the first round is over, this variable 
@@ -105,19 +100,19 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
         if punching == False:
             cv2.putText(image, "1. Turn left",
                         tuple(np.multiply([0,0.05], [640, 480]).astype(int)),
-                        cv2.FONT_HERSHEY_PLAIN, instructions_font_size, (255,255,255), 2, cv2.LINE_AA
+                        cv2.FONT_HERSHEY_PLAIN, instructions_font_size, (0,0,0), 2, cv2.LINE_AA
                         ) 
             cv2.putText(image, "2. Get in chamber postition",
                     tuple(np.multiply([0,0.13], [640, 480]).astype(int)),
-                    cv2.FONT_HERSHEY_PLAIN, instructions_font_size, (255,255,255), 2, cv2.LINE_AA
+                    cv2.FONT_HERSHEY_PLAIN, instructions_font_size, (0,0,0), 2, cv2.LINE_AA
                     ) 
             cv2.putText(image, "3. Right arm punch, Left foot step",
                     tuple(np.multiply([0,0.21], [640, 480]).astype(int)),
-                    cv2.FONT_HERSHEY_PLAIN, instructions_font_size, (255,255,255), 2, cv2.LINE_AA
+                    cv2.FONT_HERSHEY_PLAIN, instructions_font_size, (0,0,0), 2, cv2.LINE_AA
                 )
             cv2.putText(image, "4. Back to chamber position",
                         tuple(np.multiply([0,0.29], [640, 480]).astype(int)),
-                        cv2.FONT_HERSHEY_PLAIN, instructions_font_size, (255,255,255), 2, cv2.LINE_AA
+                        cv2.FONT_HERSHEY_PLAIN, instructions_font_size, (0,0,0), 2, cv2.LINE_AA
                     )
             if firstLoop == True:
                 getInChamber = pygame.mixer.music.load("audio/Get in Chamber start.mp3")
@@ -209,6 +204,9 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
 
             #checking for chamber S2
             if lknee_angle >= 145 and rknee_angle >= 145 and rhip_angle >= 160 and drwist_rhip <= (np.sqrt((rshoulder[0] - rwrist[0])**2 + (rshoulder[1] - rwrist[1])**2))/4:
+                if chamber == False and dataCaptured == False:
+                    rightHandReversePunch = pygame.mixer.music.load("audio/Right hand reverse punch.mp3")
+                    pygame.mixer.music.play()
                 punching = False
                 chamber = True
                 punchDone = False
@@ -295,16 +293,17 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
                 else:
                     pass
                 #5 examine hip position
-                #Angle of left side of hip should be between 147 and 160 degrees (mostly straight)
-                if lhip_angle <= 160 and lhip_angle >= 147:
+                #Angle of left side of hip should be between
+                #147 and 160 degrees (mostly straight)
+                if lhip_angle <= 180 and lhip_angle >= 0:
                     lhipgood = True
                 else:
                     pass
-                if lhip_angle > 160:
+                if lhip_angle > 180:
                     leanforward = True
                 else:
                     pass
-                if lhip_angle < 147:
+                if lhip_angle < 0:
                     leanback = True
                 else:
                     pass
@@ -341,7 +340,6 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
                 if relbow_angle >= 165 and relbow_angle <= 180:
                     relbowgood = True
                 else:
-                    
                     pass
                 
 
